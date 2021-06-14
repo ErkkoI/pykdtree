@@ -27,6 +27,7 @@ Anne M. Archibald and libANN by David M. Mount and Sunil Arya.
 #include <stdlib.h>
 #include <stdint.h>
 #include <float.h>
+#include <string.h>
 
 #define PA(i,d)			(pa[no_dims * pidx[i] + d])
 #define PASWAP(a,b) { uint32_t tmp = pidx[a]; pidx[a] = pidx[b]; pidx[b] = tmp; }
