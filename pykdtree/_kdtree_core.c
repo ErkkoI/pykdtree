@@ -366,15 +366,27 @@ Node_float* construct_subtree_float(float *pa, uint32_t *pidx, int8_t no_dims, u
         root->cut_bounds_lv = lv;
         root->cut_bounds_hv = hv;
 
-        /* Update bounding box before call to lower subset and restore after */
-        bbox[2 * cut_dim + 1] = cut_val;
-        root->left_child = (struct Node_float *)construct_subtree_float(pa, pidx, no_dims, start_idx, n_lo, bsp, bbox);
-        bbox[2 * cut_dim + 1] = hv;
-
-        /* Update bounding box before call to higher subset and restore after */
-        bbox[2 * cut_dim] = cut_val;
-        root->right_child = (struct Node_float *)construct_subtree_float(pa, pidx, no_dims, start_idx + n_lo, n - n_lo, bsp, bbox);
-        bbox[2 * cut_dim] = lv;
+        #pragma omp parallel
+        #pragma omp single
+        {
+        /* Update bounding box before call to lower subset*/
+        #pragma omp task
+        {
+        float *bbox_low = (float *)malloc(2*sizeof(float)*no_dims);
+        memcpy(bbox_low, bbox, 2*sizeof(float)*no_dims);
+        bbox_low[2 * cut_dim + 1] = cut_val;
+        root->left_child = (struct Node_float *)construct_subtree_float(pa, pidx, no_dims, start_idx, n_lo, bsp, bbox_low);
+        }
+        #pragma omp task
+        {
+        /* Update bounding box before call to higher subset*/
+        float *bbox_high = (float *)malloc(2*sizeof(float)*no_dims);
+        memcpy(bbox_high, bbox, 2*sizeof(float)*no_dims);
+        bbox_high[2 * cut_dim] = cut_val;
+        root->right_child = (struct Node_float *)construct_subtree_float(pa, pidx, no_dims, start_idx + n_lo, n - n_lo, bsp, bbox_high);
+        }
+        }
+        #pragma omp taskwait
     }
     return root;
 }

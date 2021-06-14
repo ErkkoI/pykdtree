@@ -32,6 +32,7 @@ compiler).
 
 If it fails with undefined compiler flags or you want to use another OpenMP
 implementation please modify setup.py at the indicated point to match your system.
+Parallel construction parallelism is controlled by OMP_MAX_ACTIVE_LEVELS
 
 Building without OpenMP support is controlled by the USE_OMP environment variable
 
